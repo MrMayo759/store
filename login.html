@@ -1,0 +1,23 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Login · Mayo Store</title><link rel="stylesheet" href="assets/css/app.css"></head><body data-mode="in">
+<header class="top"><a href="index.html"><b>Mayo Store</b></a><a class="btn sm" href="index.html">← Back to store</a></header>
+<main class="wrap" style="max-width:440px"><div class="card"><div class="tabs" id="tb"><button data-t="in" class="on">Sign in</button><button data-t="up">Register</button><button data-t="fg">Forgot password</button></div>
+<form id="f"></form><p class="msg" id="m" role="status"></p></div></main>
+<script type="module">
+import {supabase,$,toast} from "./src/services/api.js";
+const next=new URLSearchParams(location.search).get("next");const dest=next&&next.startsWith("/")&&!next.startsWith("//")?next:"index.html";
+const F={in:`<label>Email</label><input name=email type=email required autocomplete=email><label>Password</label><input name=password type=password required autocomplete=current-password><button class="btn p">Sign in</button>`,
+up:`<label>Full name</label><input name=name required minlength=2><label>Email</label><input name=email type=email required><label>Password (min 8 characters)</label><input name=password type=password minlength=8 required autocomplete=new-password><button class="btn p">Create account</button>`,
+fg:`<label>Email</label><input name=email type=email required><button class="btn p">Send reset link</button>`,
+rs:`<label>New password (min 8)</label><input name=password type=password minlength=8 required autocomplete=new-password><button class="btn p">Update password</button>`};
+let mode="in";const show=k=>{mode=k;$("#f").innerHTML=F[k];$("#m").textContent="";document.querySelectorAll("#tb button").forEach(b=>b.classList.toggle("on",b.dataset.t===k))};
+$("#tb").onclick=e=>e.target.dataset.t&&show(e.target.dataset.t);show(document.body.dataset.mode||"in");
+supabase.auth.onAuthStateChange(ev=>{if(ev==="PASSWORD_RECOVERY"){show("rs");$("#tb").style.display="none"}});
+const say=(t,ok)=>{const m=$("#m");m.textContent=t;m.className="msg"+(ok?" ok":"")};
+$("#f").onsubmit=async e=>{e.preventDefault();const v=Object.fromEntries(new FormData(e.target));const btn=e.target.querySelector("button");btn.disabled=true;let r;
+ try{
+ if(mode==="in"){r=await supabase.auth.signInWithPassword({email:v.email,password:v.password});if(!r.error)location.href=dest}
+ else if(mode==="up"){r=await supabase.auth.signUp({email:v.email,password:v.password,options:{data:{full_name:v.name},emailRedirectTo:location.origin+"/auth.html"}});if(!r.error)say("Account created. Check your email to verify your address, then sign in.",1)}
+ else if(mode==="fg"){r=await supabase.auth.resetPasswordForEmail(v.email,{redirectTo:location.origin+"/auth.html"});if(!r.error)say("If that email exists, a reset link is on its way.",1)}
+ else{r=await supabase.auth.updateUser({password:v.password});if(!r.error){toast("Password updated");setTimeout(()=>location.href="dashboard.html",800)}}
+ if(r?.error)say(r.error.message)}catch(x){say(x.message)}btn.disabled=false};
+</script></body></html>
