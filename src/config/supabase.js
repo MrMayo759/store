@@ -3,8 +3,8 @@
 // NEVER paste the service_role / secret key here.
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm";
 
-export const SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
-export const SUPABASE_KEY = "YOUR-PUBLISHABLE-OR-ANON-KEY";
+export const SUPABASE_URL = "https://omnokjqkwpsdolrokdiz.supabase.co";
+export const SUPABASE_KEY = "sb_publishable_EEYKRD9YDsqLxV0QxS5GYg_bITIQg4J";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
